@@ -1,0 +1,57 @@
+{
+	"id": "562f0072-f2b4-4f2a-8db0-204eab8f0ab2",
+	"values": [
+		{
+			"key": "baseURL",
+			"value": "http://localhost:5000/api",
+			"type": "default",
+			"enabled": true
+		},
+		{
+			"key": "registeredEmail",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "registeredUserName",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "admin_auth_token",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "event_id",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "eventId",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		},
+		{
+			"key": "rsvpEventId",
+			"value": "",
+			"type": "any",
+			"enabled": true
+		}
+	],
+	"name": "Globals",
+	"_postman_variable_scope": "globals",
+	"_postman_exported_at": "2025-05-19T20:49:00.123Z",
+	"_postman_exported_using": "Postman/11.45.6"
+}

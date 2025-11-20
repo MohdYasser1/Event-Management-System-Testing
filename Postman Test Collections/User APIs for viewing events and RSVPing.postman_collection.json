@@ -1,0 +1,342 @@
+{
+	"info": {
+		"_postman_id": "68cb0898-1ec6-4d30-8f2e-9cf4e86b0e17",
+		"name": "User APIs for viewing events and RSVPing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44619440",
+		"_collection_link": "https://mohammedyasser-4520274.postman.co/workspace/Mohammed-Yasser's-Workspace~91820f3d-008c-4842-8c6f-c1ce8cb0d60d/collection/44619440-68cb0898-1ec6-4d30-8f2e-9cf4e86b0e17?action=share&source=collection_link&creator=44619440"
+	},
+	"item": [
+		{
+			"name": "Register Valid Test Account",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 201\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(201);\r",
+							"});\r",
+							"\r",
+							"\r",
+							"pm.test(\"Response has the required fields\", function () {\r",
+							"    const responseData = pm.response.json();\r",
+							"\r",
+							"    pm.expect(responseData).to.be.an('object');\r",
+							"    pm.expect(responseData.isAdmin).to.exist;\r",
+							"    pm.expect(responseData.id).to.exist;\r",
+							"    pm.expect(responseData.username).to.exist;\r",
+							"    pm.expect(responseData.email).to.exist;\r",
+							"    pm.expect(responseData.password).to.exist;\r",
+							"    pm.expect(responseData.updatedAt).to.exist;\r",
+							"    pm.expect(responseData.createdAt).to.exist;\r",
+							"});\r",
+							"\r",
+							"const requestBody = JSON.parse(pm.request.body.raw);\r",
+							"\r",
+							"pm.globals.set(\"registeredEmail\", requestBody.email);\r",
+							"pm.globals.set(\"registeredUserName\", requestBody.username);\r",
+							"\r",
+							"\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n  \"username\": \"testuser{{$timestamp}}\", \r\n  \"email\": \"testuser{{$timestamp}}@example.com\", \r\n  \"password\": \"password123\" \r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/auth/register",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"auth",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Login Valid Test Account",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response includes a JWT token\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response).to.have.property(\"token\").that.is.a(\"string\");\r",
+							"\r",
+							"  // Save the token for future authenticated requests\r",
+							"  pm.environment.set(\"auth_token\", response.token);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n  \"email\": \"{{registeredEmail}}\", \r\n  \"password\": \"password123\" \r\n} ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/auth/login",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Valid get all events",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check status code\r",
+							"pm.test(\"Status: 200 OK\", () => pm.response.to.have.status(200));\r",
+							"\r",
+							"// Validate response is an array\r",
+							"pm.test(\"Response is an array of events\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response).to.be.an(\"array\");\r",
+							"});\r",
+							"\r",
+							"// Validate each event's structure\r",
+							"pm.test(\"All events have required fields\", () => {\r",
+							"  const events = pm.response.json();\r",
+							"  events.forEach(event => {\r",
+							"    pm.expect(event).to.have.property(\"id\");\r",
+							"    pm.expect(event).to.have.property(\"name\");\r",
+							"    pm.expect(event).to.have.property(\"description\");\r",
+							"    pm.expect(event).to.have.property(\"date\");\r",
+							"    pm.expect(event.id).to.be.a(\"number\");\r",
+							"    pm.expect(event.name).to.be.a(\"string\");\r",
+							"    pm.expect(event.description).to.be.a(\"string\");\r",
+							"    pm.expect(event.date).to.match(/^\\d{4}-\\d{2}-\\d{2}$/); // Validate date format\r",
+							"  });\r",
+							"});\r",
+							"\r",
+							"// Save the first event's ID (if events exist)\r",
+							"const events = pm.response.json();\r",
+							"\r",
+							"pm.test(\"At least one event exists\", () => {\r",
+							"  pm.expect(events).to.be.an(\"array\").that.is.not.empty;\r",
+							"});\r",
+							"\r",
+							"if (events.length > 0) {\r",
+							"  pm.globals.set(\"eventId\", events[0].id);\r",
+							"  pm.test(\"Event ID saved\", () => pm.expect(pm.globals.get(\"eventId\")).to.exist);\r",
+							"}\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/events",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Valid RSVP",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check status code\r",
+							"pm.test(\"Status: 200 OK\", () => pm.response.to.have.status(200));\r",
+							"\r",
+							"// Validate response structure\r",
+							"pm.test(\"RSVP has confirmation message\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response).to.have.property(\"message\", \"RSVP confirmed for event.\");\r",
+							"});\r",
+							"pm.test(\"RSVP confirmed with correct eventId\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response.eventId).to.eql(pm.environment.get(\"eventId\"));\r",
+							"});\r",
+							"\r",
+							"pm.test(\"RSVP confirmed with correct eventId\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  const expectedEventId = pm.globals.get(\"event_id\"); // Get stored event ID\r",
+							"  \r",
+							"  // Validate the response matches the stored event ID\r",
+							"  pm.expect(Number(response.event_id)).to.eql(expectedEventId);\r",
+							"  \r",
+							"  // Store the event ID from the RSVP response (optional, if needed elsewhere)\r",
+							"  pm.globals.set(\"rsvpEventId\", response.event_id);\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/events/:eventId/rsvps",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events",
+						":eventId",
+						"rsvps"
+					],
+					"variable": [
+						{
+							"key": "eventId",
+							"value": "{{event_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Invalid RSVP",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check status code\r",
+							"pm.test(\"Status: 404 Not Found\", () => pm.response.to.have.status(404));\r",
+							"\r",
+							"// Validate error message\r",
+							"pm.test(\"Event not found error\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response).to.have.property(\"error\", \"Event not found.\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/events/:eventId/rsvps",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events",
+						":eventId",
+						"rsvps"
+					],
+					"variable": [
+						{
+							"key": "eventId",
+							"value": "9999999"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

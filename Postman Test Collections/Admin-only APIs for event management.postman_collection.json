@@ -1,0 +1,395 @@
+{
+	"info": {
+		"_postman_id": "1463ad45-3c81-4b89-a136-680be8faa03b",
+		"name": "Admin-only APIs for event management",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "44619440",
+		"_collection_link": "https://mohammedyasser-4520274.postman.co/workspace/Mohammed-Yasser's-Workspace~91820f3d-008c-4842-8c6f-c1ce8cb0d60d/collection/44619440-1463ad45-3c81-4b89-a136-680be8faa03b?action=share&source=collection_link&creator=44619440"
+	},
+	"item": [
+		{
+			"name": "Valid Admin Login",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Response status code is 200\", function () {\r",
+							"    pm.expect(pm.response.code).to.equal(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Response includes a JWT token\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response).to.have.property(\"token\").that.is.a(\"string\");\r",
+							"\r",
+							"  // Save the token for future authenticated requests\r",
+							"  pm.globals.set(\"admin_auth_token\", response.token);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n  \"email\": \"admin_test1@example.com\", \r\n  \"password\": \"admin123\" \r\n} ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/auth/login",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"auth",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Valid event creation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check status code\r",
+							"pm.test(\"Status: 201 Created\", () => pm.response.to.have.status(201));\r",
+							"\r",
+							"// Validate response structure\r",
+							"pm.test(\"Response includes event details\", () => {\r",
+							"    const response = pm.response.json();\r",
+							"    const requestBody = JSON.parse(pm.request.body.raw);\r",
+							"    pm.expect(response).to.have.property(\"id\");\r",
+							"    pm.expect(response).to.have.property(\"name\");\r",
+							"    pm.expect(response).to.have.property(\"description\");\r",
+							"    pm.expect(response).to.have.property(\"date\");\r",
+							"    console.log(pm.request.body.raw[\"name\"])\r",
+							"    pm.expect(response.name).to.eql(requestBody.name);\r",
+							"    pm.expect(response.description).to.eql(requestBody.description);\r",
+							"});\r",
+							"\r",
+							"pm.globals.set(\"event_id\", pm.response.json().id);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n  \"name\": \"Art Exhibition\", \r\n  \"description\": \"An exhibition of contemporary art pieces.\", \r\n  \"date\": \"2025-01-10\" \r\n} ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/events",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Unauthorized event creation",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check status code\r",
+							"pm.test(\"Status: 403 Forbidden\", () => pm.response.to.have.status(403));\r",
+							"\r",
+							"// Validate error message\r",
+							"pm.test(\"Error message for non-admin\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response).to.have.property(\"error\", \"Admin access required.\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n  \"name\": \"Art Exhibition\", \r\n  \"description\": \"An exhibition of contemporary art pieces.\", \r\n  \"date\": \"2025-01-10\" \r\n} ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseURL}}/events",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Valid Checking of RSVP",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check status code\r",
+							"pm.test(\"Status: 200 OK\", () => pm.response.to.have.status(200));\r",
+							"\r",
+							"// Validate response is an array of RSVPs\r",
+							"pm.test(\"Response is an array of users\", () => {\r",
+							"  const rsvps = pm.response.json();\r",
+							"  pm.expect(rsvps).to.be.an(\"array\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/events/:eventId/rsvps",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events",
+						":eventId",
+						"rsvps"
+					],
+					"variable": [
+						{
+							"key": "eventId",
+							"value": "{{rsvpEventId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Invalid Checking of RSVP",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check status code\r",
+							"pm.test(\"Status: 403 Forbidden\", () => pm.response.to.have.status(403));\r",
+							"\r",
+							"// Validate error message\r",
+							"pm.test(\"Error message for non-admin access\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response).to.have.property(\"error\", \"Admin access required.\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/events/:eventId/rsvps",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events",
+						":eventId",
+						"rsvps"
+					],
+					"variable": [
+						{
+							"key": "eventId",
+							"value": "{{rsvpEventId}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Valid Event Deletion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check status code\r",
+							"pm.test(\"Status: 200 OK\", () => pm.response.to.have.status(200));\r",
+							"\r",
+							"// Validate success message\r",
+							"pm.test(\"Event deleted successfully\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response).to.have.property(\"message\", \"Event deleted successfully.\");\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/events/:eventId",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events",
+						":eventId"
+					],
+					"variable": [
+						{
+							"key": "eventId",
+							"value": "{{event_id}}"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Invalid Event Deletion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"// Check status code\r",
+							"pm.test(\"Status: 404 Not Found\", () => pm.response.to.have.status(404));\r",
+							"\r",
+							"// Validate error message\r",
+							"pm.test(\"Event not found error\", () => {\r",
+							"  const response = pm.response.json();\r",
+							"  pm.expect(response).to.have.property(\"error\", \"Event not found.\");\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{admin_auth_token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{baseURL}}/events/:eventId",
+					"host": [
+						"{{baseURL}}"
+					],
+					"path": [
+						"events",
+						":eventId"
+					],
+					"variable": [
+						{
+							"key": "eventId",
+							"value": "99999"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
